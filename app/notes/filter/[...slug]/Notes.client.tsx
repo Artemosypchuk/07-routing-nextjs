@@ -11,9 +11,13 @@ import SearchBox from "@/components/SearchBox/SearchBox";
 import Pagination from "@/components/Pagination/Pagination";
 
 import { fetchNotes, type NotesResponse } from "@/lib/api";
-import css from "@/app/notes/Notes.module.css";
+import css from "./Notes.module.css";
 
-export default function NotesClient() {
+interface NotesClientProps {
+  tag?: string;
+}
+
+export default function NotesClient({ tag }: NotesClientProps) {
   const [isOpenModal, setIsOpenModal] = useState(false);
   const [inputValue, setInputValue] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
@@ -33,8 +37,8 @@ export default function NotesClient() {
   };
 
   const { data, isLoading, isError, error } = useQuery<NotesResponse>({
-    queryKey: ["notes", searchQuery, page],
-    queryFn: () => fetchNotes(searchQuery, page, 12),
+    queryKey: ["notes", searchQuery, page, tag],
+    queryFn: () => fetchNotes(searchQuery, page, 12, tag),
     placeholderData: keepPreviousData,
   });
 
@@ -50,12 +54,11 @@ export default function NotesClient() {
         <SearchBox value={inputValue} onChange={handleSearchChange} />
       </header>
 
-      {isLoading ? (
+      {isLoading ?
         <p>Loading, please wait...</p>
-      ) : isError ? (
+      : isError ?
         <p>Something went wrong. {error.message}</p>
-      ) : (
-        <>
+      : <>
           <NoteList items={notes} />
           {totalPages > 1 && (
             <Pagination
@@ -65,7 +68,7 @@ export default function NotesClient() {
             />
           )}
         </>
-      )}
+      }
 
       <Modal isOpen={isOpenModal} onClose={closeModal}>
         <NoteForm onClose={closeModal} />

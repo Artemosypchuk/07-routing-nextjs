@@ -5,19 +5,23 @@ import {
 } from "@tanstack/react-query";
 import { fetchNotes } from "@/lib/api";
 import NotesClient from "./Notes.client";
+interface NotesPageProps {
+  params: Promise<{ slug: string[] }>;
+}
+export default async function NotesPage({ params }: NotesPageProps) {
+  const { slug } = await params;
+  const tag = slug[0] === "all" ? undefined : slug[0];
 
-export default async function NotesPage() {
   const queryClient = new QueryClient();
 
-  // Попереднє завантаження першої сторінки без пошуку
   await queryClient.prefetchQuery({
-    queryKey: ["notes", "", 1],
-    queryFn: () => fetchNotes("", 1, 12),
+    queryKey: ["notes", "", 1, tag],
+    queryFn: () => fetchNotes("", 1, 12, tag),
   });
 
   return (
     <HydrationBoundary state={dehydrate(queryClient)}>
-      <NotesClient />
+      <NotesClient tag={tag} />
     </HydrationBoundary>
   );
 }
